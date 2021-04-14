@@ -1,0 +1,140 @@
+ func fnc_monta_view_mensagem_ok_no_app(texto_view:String,texto_view2:String,view_tela_ok:UIView,nome_imagem:String,chamada_ipad_tela_maior:Bool)
+    {
+        sharedDadosViews.sharedInstance.var_view_tela_ok.removeFromSuperview();
+        var var_tela = sharedDadosViews.sharedInstance.fnc_tamanho_tela(eh_por_uidevice:false);
+        //
+        var var_cor_moldura:UIColor = UIColor();
+        var var_cor_quadro:UIColor = UIColor();
+        var var_cor_texto:UIColor = UIColor();
+        var var_cor_texto2:UIColor = UIColor();
+        var var_nome_imagem_foto_final:String = "";
+        var var_nome_imagem_fundo:String = "";
+        var var_cor_botao_ok:UIColor = UIColor();
+        if sharedDadosViews.sharedInstance.var_ajustes_shared.cor_tela_ganhos == "08"||(UITraitCollection.current.userInterfaceStyle == UIUserInterfaceStyle.dark&&sharedDadosViews.sharedInstance.var_ajustes_shared.modo_escuro_automatico)
+        {
+           var_cor_quadro = #colorLiteral(red: 0.1287976251, green: 0.144548105, blue: 0.2083597715, alpha: 1);
+           var_cor_texto = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1);
+           var_nome_imagem_fundo = "fundo_compra_app_escuro4";
+           var_cor_botao_ok = #colorLiteral(red: 0.3038792014, green: 0.5452367663, blue: 0.1332927644, alpha: 1);
+        }
+        else
+        {
+           var_cor_quadro = #colorLiteral(red: 1, green: 0.9437445724, blue: 0.900779614, alpha: 1);
+           var_cor_texto = #colorLiteral(red: 0.1176470588, green: 0.1176470588, blue: 0.1176470588, alpha: 1);
+           var_nome_imagem_fundo = "fundo_compra_app2";
+           var_cor_botao_ok = #colorLiteral(red: 0.9247187972, green: 0.4196567237, blue: 0.2299177647, alpha: 1);
+        }
+        //
+        var var_view_tela_ok:UIView = UIView();
+        //
+       /* var myImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width/1.14, height: UIScreen.main.bounds.height/2.3))
+        myImageView.image = UIImage(named:var_nome_imagem_fundo);
+        myImageView.layer.cornerRadius = 20.0;
+        var_view_tela_ok.addSubview(myImageView);*/
+        //
+        var var_label_texto = UILabel();
+        var_label_texto.numberOfLines = 10;
+        var_label_texto.frame = CGRect(x: 36, y: 90, width: (UIScreen.main.bounds.width/1.14)-80, height: 220);
+        var_label_texto.font = UIFont(name: "Helvetica", size: 18);
+        if var_tela == "IPHONE_5"
+        {
+            var_label_texto.font = UIFont(name: "Helvetica", size: 14);
+            var_label_texto.frame = CGRect(x: 35, y: 70, width: (UIScreen.main.bounds.width/1.14)-65, height: 120);
+        }
+        if var_tela == "IPHONE_7"
+        {
+            var_label_texto.font = UIFont(name: "Helvetica", size: 15);
+            var_label_texto.frame = CGRect(x: 35, y: 80, width: (UIScreen.main.bounds.width/1.14)-70, height: 150);
+        }
+        if var_tela == "IPHONE_7_PLUS"
+        {
+            var_label_texto.font = UIFont(name: "Helvetica", size: 18);
+            var_label_texto.frame = CGRect(x: 36, y: 90, width: (UIScreen.main.bounds.width/1.14)-80, height: 160);
+        }
+        if var_tela == "IPAD"
+        {
+            var_label_texto.frame = CGRect(x: 40, y: 55, width: (UIScreen.main.bounds.width/2.14)-70, height: 220);
+        }
+        if var_tela == "IPAD_PRO"
+        {
+            var_label_texto.frame = CGRect(x: 24, y: 40, width: (UIScreen.main.bounds.width/3.14)-44, height: 220);
+        }
+        var_label_texto.backgroundColor = .clear;
+        var_label_texto.textColor = var_cor_texto;
+        var_label_texto.textAlignment = .center;
+        var_label_texto.text = texto_view;
+        var_view_tela_ok.addSubview(var_label_texto);
+        //
+        var var_botao_ok = UIButton();
+        var var_image = UIImage(named: nome_imagem);
+        var_botao_ok.setImage(var_image, for: .normal);
+        var_botao_ok.frame = CGRect(x: 60, y: 10, width: (UIScreen.main.bounds.width/1.14)-120, height: 120);
+        if var_tela == "IPHONE_5"
+        {
+            var_botao_ok.frame = CGRect(x: 60, y: 0, width: (UIScreen.main.bounds.width/1.14)-120, height: 90);
+        }
+        if var_tela == "IPHONE_7"
+        {
+            var_botao_ok.frame = CGRect(x: 60, y: 00, width: (UIScreen.main.bounds.width/1.14)-120, height: 120);
+        }
+        if var_tela == "IPAD"
+        {
+            var_botao_ok.frame = CGRect(x: 60, y: 10, width: (UIScreen.main.bounds.width/2.14)-120, height: 120);
+        }
+        if var_tela == "IPAD_PRO"
+        {
+            var_botao_ok.frame = CGRect(x: 60, y: 0, width: (UIScreen.main.bounds.width/3.14)-120, height: 100);
+        }
+        var_view_tela_ok.addSubview(var_botao_ok);
+        //
+        var_view_tela_ok.frame = CGRect(x: (UIScreen.main.bounds.center.x-( UIScreen.main.bounds.width/2.3)), y: (UIScreen.main.bounds.center.y-(UIScreen.main.bounds.center.y/1.4)), width: UIScreen.main.bounds.width/1.14, height: UIScreen.main.bounds.height/2.3);
+        if var_tela == "IPAD"
+        {
+            var_view_tela_ok.frame = CGRect(x: (UIScreen.main.bounds.center.x-( UIScreen.main.bounds.width/3.4)), y: (UIScreen.main.bounds.center.y-(UIScreen.main.bounds.center.y/3.1)), width: UIScreen.main.bounds.width/2.14, height: UIScreen.main.bounds.height/3.4);
+            if chamada_ipad_tela_maior
+            {
+                var_view_tela_ok.frame.origin.x = var_view_tela_ok.frame.origin.x + 60;
+            }
+        }
+        if var_tela == "IPAD_PRO"
+        {
+            var_view_tela_ok.frame = CGRect(x: (UIScreen.main.bounds.center.x-( UIScreen.main.bounds.width/3.2)), y: (UIScreen.main.bounds.center.y-(UIScreen.main.bounds.center.y/2.1)), width: UIScreen.main.bounds.width/3.14, height: UIScreen.main.bounds.height/4.4);
+            if chamada_ipad_tela_maior
+            {
+                var_view_tela_ok.frame.origin.x = var_view_tela_ok.frame.origin.x + 120;
+            }
+        }
+        var_view_tela_ok.backgroundColor = var_cor_quadro;
+        var_view_tela_ok.layer.cornerRadius = 25.0;
+        var_view_tela_ok.layer.borderWidth = 1.0;
+        var_view_tela_ok.layer.borderColor = UIColor.gray.cgColor;
+        //
+        var_botao_ok = UIButton();
+        var_botao_ok.frame = CGRect(x: 30, y: var_view_tela_ok.frame.size.height-80, width: var_view_tela_ok.frame.size.width-60, height: 40);
+        if var_tela == "IPHONE_5"
+        {
+            var_botao_ok.frame = CGRect(x: 30, y: var_view_tela_ok.frame.size.height-45, width: var_view_tela_ok.frame.size.width-60, height: 30);
+        }
+        if var_tela == "IPHONE_7"
+        {
+            var_botao_ok.frame = CGRect(x: 30, y: var_view_tela_ok.frame.size.height-60, width: var_view_tela_ok.frame.size.width-60, height: 40);
+        }
+        var_view_tela_ok.addSubview(var_botao_ok);
+        var_botao_ok.addTarget(self, action: #selector(self.dismissOnTapOutside2), for: .touchUpInside);
+        var_botao_ok.setTitle("OK", for: .normal);
+        var_botao_ok.layer.borderWidth = 1.0;
+        var_botao_ok.layer.cornerRadius = 20.0;
+        var_botao_ok.layer.borderColor = UIColor.gray.cgColor;
+        var_botao_ok.backgroundColor = var_cor_botao_ok //#colorLiteral(red: 0.9308611155, green: 0.4973902106, blue: 0.3507646918, alpha: 1);
+        var_botao_ok.setTitleColor(var_cor_texto, for: .normal);
+        var_botao_ok.titleLabel?.font = UIFont(name: "Helvetica", size: 23);
+        var_botao_ok.titleLabel?.textAlignment = .center;
+        var_view_tela_ok.addSubview(var_botao_ok);
+        //
+        view_tela_ok.addSubview(var_view_tela_ok);
+        //
+        sharedDadosViews.sharedInstance.var_view_tela_ok = var_view_tela_ok;
+        //
+        sharedDadosViews.sharedInstance.var_view_tela_ok.superview?.isUserInteractionEnabled = true
+        sharedDadosViews.sharedInstance.var_view_tela_ok.superview?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.dismissOnTapOutside2)));
+    }
