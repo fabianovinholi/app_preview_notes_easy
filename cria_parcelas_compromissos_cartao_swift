@@ -1,0 +1,391 @@
+//FUNCAO QUE INSERE AS PARCELAS DO CARTAO DE CREDITO CASO QUEIRA PARCELAR, TEM TODA UMA LOGICA DENTRO QUE VAI INSERINDO OS GRUPOS
+    func fnc_insere_cria_parcelas_compromissos(tipo_cadastro:String,qtde_parcelas:Int,tipo_repeticao:String,nome:String,nome_compromisso:String,data_compromisso:Date)
+    {
+        if tipo_cadastro == "P"
+        {
+            return
+        }
+        var var_pessoas_inclusao_parcelas:Array<pessoa> = [pessoa(nome: "", cep: "", endereco: "", cidade: "", bairro: "",estado: "", anotacoes: "", nome_afazeres: "",telefone: "",data_nascimento: "",data_cadastro: "",dia_notificacao:"",mes_notificacao:"",ano_notificacao:"",hora_notificacao:"",minuto_notificacao:"",lembrete_notificacao:"",horas_antes_notificacao:"",valor_atendimento: 0, tipo_valor_atendimento: "R",tarefa_concluida: "N",id_categoria: 0,tipo_cadastro: "P",data_vencto_credito: Date(),data_pagto_credito: Date(),nome_cartao_credito: "",data_criacao: Date())];
+        var var_pessoa:pessoa!;
+        var var_data_vencto_credito_inc:Date = Date();
+        var var_qtde_parcelas:Int = qtde_parcelas;
+        //
+        let dateFormatter_compromisso = DateFormatter() //Instância do date Formatter
+        dateFormatter_compromisso.dateFormat = "HH";
+        var var_hora_compromisso:String = "08";
+        if tipo_cadastro == "C"
+        {
+            var_hora_compromisso = dateFormatter_compromisso.string(from: data_compromisso);
+        }
+        dateFormatter_compromisso.dateFormat = "mm";
+        var var_minuto_compromisso:String = "00";
+        if tipo_cadastro == "C"
+        {
+            var_minuto_compromisso = dateFormatter_compromisso.string(from: data_compromisso);
+        }
+        var_pessoas_inclusao_parcelas.removeAll();
+        func_le_pessoa_core_data(insere_cabecalho: "N");
+        print("@insere parcelas");
+        if var_pessoas_shared.count > 0
+        {
+            let dateFormatter = DateFormatter() //Instância do date Formatter
+            dateFormatter.dateFormat = "dd/MM/yyyy";
+            var var_sorted_pessoas = var_pessoas_shared.sorted(by: { (img0: pessoa, img1: pessoa) -> Bool in
+                       return img0.data_vencto_credito < img1.data_vencto_credito});
+            if tipo_cadastro == "C"||tipo_cadastro == "E"
+            {
+              for w in 0...(var_sorted_pessoas.count-1)
+              {
+                print("@insere parcelas nome \(var_sorted_pessoas[w].nome) tipo cadastro \(var_sorted_pessoas[w].tipo_cadastro) tarefa concluida \(var_sorted_pessoas[w].tarefa_concluida)");
+                if nome == var_sorted_pessoas[w].nome&&var_sorted_pessoas[w].tipo_cadastro == tipo_cadastro&&((var_sorted_pessoas[w].tarefa_concluida == "N"&&var_sorted_pessoas[w].tipo_cadastro == "E")||var_sorted_pessoas[w].tipo_cadastro == "C") //TIPO CADASTRO CARTAO DE CREDITO E FATURA NAO ESTA PAGA
+                {
+                    let dateFormatter_cadastro = DateFormatter() //Instância do date Formatter
+                    dateFormatter_cadastro.dateFormat = "dd/MM/yyyy";
+                    var var_data:Date = Date();
+                    var_data = var_sorted_pessoas[w].data_vencto_credito;
+                    if tipo_cadastro == "C"
+                    {
+                        var_data = dateFormatter.date(from: var_sorted_pessoas[w].data_cadastro) ?? Date();
+                    }
+                   //retornamos as faturas futuras existentes do cartao de credito
+                    var var_pessoa_compromissos_futuros:Array<pessoa> = fnc_retorna_compromissos_futuros(tipo_cadastro:tipo_cadastro,nome_cartao_credito:var_sorted_pessoas[w].nome_cartao_credito,data: var_data)
+                    if var_sorted_pessoas[w].lista_afazeres.count > 0
+                    {
+                       for y in 0...(var_sorted_pessoas[w].lista_afazeres.count-1)
+                        {
+                            var_qtde_parcelas = qtde_parcelas;
+                            if tipo_cadastro == "E"
+                            {
+                                var_qtde_parcelas =  Int(var_sorted_pessoas[w].lista_afazeres[y].horas_antes_nofificacao) ?? 1;
+                                if sharedDadosViews.sharedInstance.var_tipo_transacao_tela_insere_cadastro == "PARCIAL"
+                                {
+                                    var_qtde_parcelas = 2;
+                                }
+                            }
+                            let dateFormatter_compara = DateFormatter() //Instância do date Formatter
+                            dateFormatter_compara.dateFormat = "dd/MM/yyyy";
+                            print("@insere parcelas 1 QTD PARCELAS \(var_qtde_parcelas)");
+                            if nome_compromisso == var_sorted_pessoas[w].lista_afazeres[y].descricao_afazer&&dateFormatter_compara.string(from: data_compromisso) == dateFormatter_compara.string(from: var_sorted_pessoas[w].lista_afazeres[y].data_notificacao)&&var_qtde_parcelas > 1&&var_sorted_pessoas[w].lista_afazeres[y].gerou_parcelas_cartao_credito == "N"
+                                //QUANTIDADE DE PARCELAS MAIOR QUE 1 E NAO GEROU PARCELAS COMPROMISSOS AINDA PARA CRIAR OU INSEREIR PARCELAS NOS COPROMISSOS
+                            {
+                                var var_inc_parcelas:Int = 0;
+                                
+                                var var_qtd_parcelas:Int = qtde_parcelas;
+                                if tipo_cadastro == "E"
+                                {
+                                    var_qtd_parcelas =  Int(var_sorted_pessoas[w].lista_afazeres[y].horas_antes_nofificacao) ?? 1;
+                                     if sharedDadosViews.sharedInstance.var_tipo_transacao_tela_insere_cadastro == "PARCIAL"
+                                     {
+                                        var_qtd_parcelas = 2;
+                                     }
+                                }
+                                print("@insere parcelas 2");
+                                if var_pessoa_compromissos_futuros.count > 0
+                                {
+                                    if tipo_cadastro == "C"||tipo_cadastro == "E"
+                                    {
+                                        var var_data_compromisso_p:Date = data_compromisso;
+                                        var var_data_vencto_cartao_p:Date = var_sorted_pessoas[w].data_vencto_credito;
+                                        for u in 0...var_qtd_parcelas
+                                        {
+                                                var_data_compromisso_p = fnc_data_anterior_proximo_mes(data:var_data_compromisso_p,tipo:"+");
+                                                var_data_vencto_cartao_p = fnc_data_anterior_proximo_mes(data:var_data_vencto_cartao_p,tipo:"+");
+                                                var var_nome_compromissos_p:String = "";
+                                                var var_achou_cadastro_mes:Bool = false;
+                                               dateFormatter.dateFormat = "dd/MM/yyyy";
+                                               for k in 0...(var_pessoa_compromissos_futuros.count-1)
+                                              {
+                                                
+                                                if tipo_cadastro == "C"
+                                                {
+                                                   if var_pessoa_compromissos_futuros[k].tipo_cadastro == "C"&&dateFormatter.date(from: var_pessoa_compromissos_futuros[k].data_cadastro) ?? Date() >= var_data_compromisso_p.startOfMonth()&&dateFormatter.date(from: var_pessoa_compromissos_futuros[k].data_cadastro) ?? Date() <= var_data_compromisso_p.endOfMonth()
+                                                  {
+                                                     var_achou_cadastro_mes = true;
+                                                  }
+                                                }
+                                                else if tipo_cadastro == "E"
+                                                {
+                                                    if var_pessoa_compromissos_futuros[k].tipo_cadastro == "E"&&var_sorted_pessoas[w].nome_cartao_credito == var_pessoa_compromissos_futuros[k].nome_cartao_credito&&var_pessoa_compromissos_futuros[k].data_vencto_credito >= var_data_vencto_cartao_p.startOfMonth()&&var_pessoa_compromissos_futuros[k].data_vencto_credito <= var_data_vencto_cartao_p.endOfMonth()
+                                                  {
+                                                     var_achou_cadastro_mes = true;
+                                                  }
+                                                }
+                                              }
+                                              if var_achou_cadastro_mes == false
+                                              {
+                                                  dateFormatter.dateFormat = "MMM/yyyy";
+                                                  //dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                                                  if NSLocalizedString("sigla_idioma", comment: "") == "pt"
+                                                  {
+                                                     dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                                                  }
+                                                  else if NSLocalizedString("sigla_idioma", comment: "") == "es"
+                                                  {
+                                                     dateFormatter.locale? = NSLocale(localeIdentifier: "es_ES") as Locale;
+                                                  }
+                                                  else if NSLocalizedString("sigla_idioma", comment: "") == "fr"
+                                                  {
+                                                      dateFormatter.locale? = NSLocale(localeIdentifier: "fr_FR") as Locale;
+                                                   }
+                                                  else if NSLocalizedString("sigla_idioma", comment: "") == "de"
+                                                  {
+                                                      dateFormatter.locale? = NSLocale(localeIdentifier: "de_DE") as Locale;
+                                                   }
+                                                  else if NSLocalizedString("sigla_idioma", comment: "") == "it"
+                                                  {
+                                                      dateFormatter.locale? = NSLocale(localeIdentifier: "it_IT") as Locale;
+                                                   }
+                                                  else
+                                                  {
+                                                      dateFormatter.locale? = NSLocale(localeIdentifier: "en_US") as Locale;
+                                                  }
+                                                if tipo_cadastro == "E"
+                                                {
+                                                    var_nome_compromissos_p = "\(NSLocalizedString("alert_titulo_fatura", comment: "").uppercased()) \(dateFormatter.string(from: var_data_vencto_cartao_p).uppercased())/\(var_sorted_pessoas[w].nome_cartao_credito)";
+                                                }
+                                                else if tipo_cadastro == "C"
+                                                {
+                                                  var_nome_compromissos_p = "\(NSLocalizedString("alert_titulo_mensal", comment: "").uppercased()) \(dateFormatter.string(from: var_data_compromisso_p).uppercased())";
+                                                }
+                                                var_nome_compromissos_p = fnc_substitui_char_por_char(texto: var_nome_compromissos_p, qual_caracter: ".", por_qual_caracter: "");
+                                                dateFormatter.dateFormat = "dd/MM/yyyy";
+                                                var var_pessoa_inclusao:pessoa = pessoa(nome: var_nome_compromissos_p, cep: "", endereco: "", cidade: "", bairro: "", estado: "", anotacoes: var_sorted_pessoas[w].anotacoes, nome_afazeres: var_nome_compromissos_p, telefone: "", data_nascimento: "", data_cadastro: dateFormatter.string(from: var_data_compromisso_p.startOfMonth()), dia_notificacao: "", mes_notificacao: "", ano_notificacao: "", hora_notificacao: "", minuto_notificacao: "", lembrete_notificacao: var_sorted_pessoas[w].lembrete_notificacao, horas_antes_notificacao: "", valor_atendimento: 0, tipo_valor_atendimento: "", tarefa_concluida: "N", id_categoria: 0, tipo_cadastro: tipo_cadastro, data_vencto_credito: var_data_vencto_cartao_p, data_pagto_credito: var_data_vencto_cartao_p, nome_cartao_credito: var_sorted_pessoas[w].nome_cartao_credito,data_criacao: Date());
+                                                   //
+                                                 var_pessoa_compromissos_futuros.append(var_pessoa_inclusao);
+                                                print("@INSERE MES PULOU \(var_nome_compromissos_p) \(var_data_compromisso_p)");
+                                              }
+                                           }
+                                        }
+                                    var var_sorted_pessoa_compromissos_futuros = var_pessoa_compromissos_futuros.sorted(by: { (img0: pessoa, img1: pessoa) -> Bool in return img0.data_vencto_credito < img1.data_vencto_credito});
+                                    print("@insere parcelas 3");
+                                    //
+                                    var_qtd_parcelas = var_qtd_parcelas - 1;
+                                    var var_data_vencto_parou:Date = Date();
+                                    var var_incluiu_parcelas_compromissos_existentes:Bool = false;
+                                    var var_data_compromisso:Date = data_compromisso;
+                                    for z in 0...(var_sorted_pessoa_compromissos_futuros.count-1)
+                                    {
+                                        var_inc_parcelas = var_inc_parcelas + 1;
+                                        if var_inc_parcelas <= var_qtd_parcelas
+                                        {
+                                            print("@insere parcelas 3 CONFIRMA");
+                                            var_incluiu_parcelas_compromissos_existentes = true;
+                                            var dateFormatter = DateFormatter();
+                                            dateFormatter.dateFormat = "dd/MM/yyyy";
+                                             var_data_vencto_parou = var_sorted_pessoa_compromissos_futuros[z].data_vencto_credito;
+                                            if tipo_cadastro == "C"
+                                            {
+                                                var_data_vencto_parou = dateFormatter.date(from: var_sorted_pessoa_compromissos_futuros[z].data_cadastro) ?? Date();
+                                            }
+                                            dateFormatter.dateFormat = "MM/yyyy";
+                                            var mesAnoVencto:String = dateFormatter.string(from: var_data_vencto_parou);
+                                            var_data_compromisso = fnc_data_anterior_proximo_mes(data:var_data_compromisso,tipo:"+");
+                                            dateFormatter.dateFormat = "dd";
+                                            var var_dia:String = dateFormatter.string(from: var_data_compromisso);
+                                            dateFormatter.dateFormat = "MM";
+                                            var var_mes:String = dateFormatter.string(from: var_data_compromisso);
+                                            dateFormatter.dateFormat = "yyyy";
+                                            var var_ano:String = dateFormatter.string(from: var_data_compromisso);
+                                            //
+                                            var var_valor_compromisso:Double = var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento;
+                                            if sharedDadosViews.sharedInstance.var_tipo_transacao_tela_insere_cadastro == "PARCIAL"
+                                            {
+                                                var_valor_compromisso = (var_total_cartao_credito_transacao_parcial as! NSString).doubleValue;
+                                            }
+                                            var_sorted_pessoa_compromissos_futuros[z].lista_afazeres.append(afazer_pessoa(pessoa: var_sorted_pessoa_compromissos_futuros[z].nome, descricao_afazer: var_sorted_pessoas[w].lista_afazeres[y].descricao_afazer, data_notificacao: var_data_compromisso, dia_notificacao: var_dia, mes_notificacao: var_mes, ano_notificacao: var_ano, hora_notificacao: var_hora_compromisso, minuto_notificacao: var_minuto_compromisso, horas_antes_notificacao: var_sorted_pessoas[w].lista_afazeres[y].horas_antes_nofificacao, valor_atendimento: var_valor_compromisso, tipo_valor_atendimento: var_sorted_pessoas[w].lista_afazeres[y].tipo_valor_atendimento, tarefa_concluida: "N", id_categoria: var_sorted_pessoas[w].lista_afazeres[y].id_categoria, gerou_parcelas_cartao_credito: "S",data_criacao: Date(),qtde_parcelas: var_sorted_pessoas[w].lista_afazeres[y].qtde_parcelas,tipo_repeticao: var_sorted_pessoas[w].lista_afazeres[y].tipo_repeticao));
+                                        var_pessoas_inclusao_parcelas.append(var_sorted_pessoa_compromissos_futuros[z]);
+                                        }
+                                    }
+                                    if var_incluiu_parcelas_compromissos_existentes
+                                    {
+                                       if var_inc_parcelas < var_qtd_parcelas
+                                       {
+                                          var var_qtd_parc_faltam:Int = var_qtd_parcelas - var_inc_parcelas;
+                                          for h in 0...(var_qtd_parc_faltam-1)
+                                          {
+                                            
+                                            var_data_vencto_credito_inc = fnc_data_anterior_proximo_mes(data:var_data_vencto_parou,tipo:"+");
+                                            var_data_vencto_parou = var_data_vencto_credito_inc;
+                                            //
+                                            var var_nome:String = "";
+                                            let dateFormatter = DateFormatter() //Instância do date Formatter
+                                            dateFormatter.dateFormat = "MMM/yyyy";
+                                            //dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                                            if NSLocalizedString("sigla_idioma", comment: "") == "pt"
+                                            {
+                                               dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                                            }
+                                            else if NSLocalizedString("sigla_idioma", comment: "") == "es"
+                                            {
+                                               dateFormatter.locale? = NSLocale(localeIdentifier: "es_ES") as Locale;
+                                            }
+                                            else if NSLocalizedString("sigla_idioma", comment: "") == "fr"
+                                            {
+                                                   dateFormatter.locale? = NSLocale(localeIdentifier: "fr_FR") as Locale;
+                                            }
+                                            else if NSLocalizedString("sigla_idioma", comment: "") == "de"
+                                            {
+                                                   dateFormatter.locale? = NSLocale(localeIdentifier: "de_DE") as Locale;
+                                            }
+                                            else if NSLocalizedString("sigla_idioma", comment: "") == "it"
+                                            {
+                                                   dateFormatter.locale? = NSLocale(localeIdentifier: "it_IT") as Locale;
+                                            }
+                                            else
+                                            {
+                                                dateFormatter.locale? = NSLocale(localeIdentifier: "en_US") as Locale;
+                                            }
+                                            let var_data_pagto_credito:String = dateFormatter.string(from: var_data_vencto_credito_inc);
+                                            dateFormatter.dateFormat = "dd/MM/yyyy";
+                                            var var_data_cadastro:String = dateFormatter.string(from: var_data_vencto_credito_inc.startOfMonth());
+                                            var var_nome_cartao_credito:String = "";
+                                            var_nome_cartao_credito = var_sorted_pessoas[w].nome_cartao_credito;
+                                            if tipo_cadastro == "E"
+                                            {
+                                                var_nome = "\(NSLocalizedString("alert_titulo_fatura", comment: "").uppercased()) \(var_data_pagto_credito.uppercased())/\(var_nome_cartao_credito)";
+                                            }
+                                            else if tipo_cadastro == "C"
+                                            {
+                                               var_nome = "\(NSLocalizedString("alert_titulo_mensal", comment: "").uppercased()) \(var_data_pagto_credito.uppercased())";
+                                            }
+                                            var_nome = fnc_substitui_char_por_char(texto: var_nome, qual_caracter: ".", por_qual_caracter: "");
+                                            var var_pessoa_inclusao:pessoa = pessoa(nome: var_nome, cep: var_sorted_pessoas[w].cep, endereco: var_sorted_pessoas[w].endereco, cidade: var_sorted_pessoas[w].cidade, bairro: var_sorted_pessoas[w].bairro, estado: var_sorted_pessoas[w].estado, anotacoes: var_sorted_pessoas[w].anotacoes, nome_afazeres: var_nome, telefone: var_sorted_pessoas[w].telefone, data_nascimento: var_sorted_pessoas[w].data_nascimento, data_cadastro: var_data_cadastro, dia_notificacao: "", mes_notificacao: "", ano_notificacao: "", hora_notificacao: "", minuto_notificacao: "", lembrete_notificacao: var_sorted_pessoas[w].lembrete_notificacao, horas_antes_notificacao: "", valor_atendimento: 0, tipo_valor_atendimento: "", tarefa_concluida: "N", id_categoria: 0, tipo_cadastro: tipo_cadastro, data_vencto_credito: var_data_vencto_credito_inc, data_pagto_credito: var_data_vencto_credito_inc, nome_cartao_credito: var_sorted_pessoas[w].nome_cartao_credito,data_criacao: Date());
+                                           
+                                                
+                                                var_data_compromisso = fnc_data_anterior_proximo_mes(data:var_data_compromisso,tipo:"+");
+                                                dateFormatter.dateFormat = "dd";
+                                                var var_dia:String = dateFormatter.string(from: var_data_compromisso);
+                                                dateFormatter.dateFormat = "MM";
+                                                var var_mes:String = dateFormatter.string(from: var_data_compromisso);
+                                                dateFormatter.dateFormat = "yyyy";
+                                                var var_ano:String = dateFormatter.string(from: var_data_compromisso);
+                                            var var_valor_compromisso:Double = var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento;
+                                            if sharedDadosViews.sharedInstance.var_tipo_transacao_tela_insere_cadastro == "PARCIAL"
+                                            {
+                                                var_valor_compromisso = (var_total_cartao_credito_transacao_parcial as! NSString).doubleValue;
+                                            }
+                                            var_pessoa_inclusao.lista_afazeres.append(afazer_pessoa(pessoa: var_nome, descricao_afazer: var_sorted_pessoas[w].lista_afazeres[y].descricao_afazer, data_notificacao: var_data_compromisso, dia_notificacao: var_dia, mes_notificacao: var_mes, ano_notificacao: var_ano, hora_notificacao: var_hora_compromisso, minuto_notificacao: var_minuto_compromisso, horas_antes_notificacao: var_sorted_pessoas[w].lista_afazeres[y].horas_antes_nofificacao, valor_atendimento: var_valor_compromisso, tipo_valor_atendimento: var_sorted_pessoas[w].lista_afazeres[y].tipo_valor_atendimento, tarefa_concluida: "N", id_categoria: var_sorted_pessoas[w].lista_afazeres[y].id_categoria, gerou_parcelas_cartao_credito: "S",data_criacao: Date(),qtde_parcelas: var_sorted_pessoas[w].lista_afazeres[y].qtde_parcelas,tipo_repeticao: var_sorted_pessoas[w].lista_afazeres[y].tipo_repeticao))
+                                        var_pessoas_inclusao_parcelas.append(var_pessoa_inclusao);
+                                          }
+                                       }
+                                    }
+                                }
+                                else //nao tem faturas futuras entao criaremos tudo novo
+                                {
+                                    print("@insere parcelas 4");
+                                    var var_inc_parcelas:Int = 0;
+                                    var var_qtd_parcelas:Int = qtde_parcelas;
+                                    if tipo_cadastro == "E"
+                                    {
+                                        var_qtd_parcelas =  Int(var_sorted_pessoas[w].lista_afazeres[y].horas_antes_nofificacao) ?? 2;
+                                         if sharedDadosViews.sharedInstance.var_tipo_transacao_tela_insere_cadastro == "PARCIAL"
+                                         {
+                                             var_qtd_parcelas = 2;
+                                         }
+                                    }
+                                    var_qtd_parcelas = var_qtd_parcelas - 1;
+                                    var var_data_vencto_parou:Date = var_sorted_pessoas[w].data_vencto_credito;
+                                    if tipo_cadastro == "C"
+                                    {
+                                        let dateFormatter = DateFormatter() //Instância do date Formatter
+                                        dateFormatter.dateFormat = "dd/MM/yyyy";
+                                        var_data_vencto_parou = dateFormatter.date(from: var_sorted_pessoas[w].data_cadastro) ?? Date();
+                                    }
+                                    var var_data_compromisso:Date = data_compromisso;
+                                    var var_inicio:Bool = true;
+                                       for h in 0...(var_qtd_parcelas-1)
+                                       {
+                                         
+                                        var_data_vencto_credito_inc = fnc_data_anterior_proximo_mes(data:var_data_vencto_parou,tipo:"+");
+                                          var_data_vencto_parou = var_data_vencto_credito_inc;
+                                         //
+                                         var var_nome:String = "";
+                                         let dateFormatter = DateFormatter() //Instância do date Formatter
+                                         dateFormatter.dateFormat = "MMM/yyyy";
+                                         //dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                                         if NSLocalizedString("sigla_idioma", comment: "") == "pt"
+                                         {
+                                            dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                                         }
+                                         else if NSLocalizedString("sigla_idioma", comment: "") == "es"
+                                         {
+                                            dateFormatter.locale? = NSLocale(localeIdentifier: "es_ES") as Locale;
+                                         }
+                                         else if NSLocalizedString("sigla_idioma", comment: "") == "fr"
+                                         {
+                                            dateFormatter.locale? = NSLocale(localeIdentifier: "fr_FR") as Locale;
+                                         }
+                                         else if NSLocalizedString("sigla_idioma", comment: "") == "de"
+                                         {
+                                            dateFormatter.locale? = NSLocale(localeIdentifier: "de_DE") as Locale;
+                                         }
+                                         else if NSLocalizedString("sigla_idioma", comment: "") == "ït"
+                                         {
+                                            dateFormatter.locale? = NSLocale(localeIdentifier: "ït_IT") as Locale;
+                                         }
+                                         else
+                                         {
+                                             dateFormatter.locale? = NSLocale(localeIdentifier: "en_US") as Locale;
+                                         }
+                                         let var_data_pagto_credito:String = dateFormatter.string(from: var_data_vencto_credito_inc);
+                                         dateFormatter.dateFormat = "dd/MM/yyyy";
+                                        var var_data_cadastro:String = dateFormatter.string(from: var_data_vencto_credito_inc.startOfMonth());
+                                         var var_nome_cartao_credito:String = "";
+                                         var_nome_cartao_credito = var_sorted_pessoas[w].nome_cartao_credito;
+                                        if tipo_cadastro == "E"
+                                        {
+                                           var_nome = "\(NSLocalizedString("alert_titulo_fatura", comment: "").uppercased()) \(var_data_pagto_credito.uppercased())/\(var_nome_cartao_credito)";
+                                        }
+                                        else if tipo_cadastro == "C"
+                                        {
+                                           var_nome = "\(NSLocalizedString("alert_titulo_mensal", comment: "").uppercased()) \(var_data_pagto_credito.uppercased())";
+                                        }
+                                        var_nome = fnc_substitui_char_por_char(texto: var_nome, qual_caracter: ".", por_qual_caracter: "");
+                                        var var_pessoa_inclusao:pessoa = pessoa(nome: var_nome, cep: var_sorted_pessoas[w].cep, endereco: var_sorted_pessoas[w].endereco, cidade: var_sorted_pessoas[w].cidade, bairro: var_sorted_pessoas[w].bairro, estado: var_sorted_pessoas[w].estado, anotacoes: var_sorted_pessoas[w].anotacoes, nome_afazeres: var_nome, telefone: var_sorted_pessoas[w].telefone, data_nascimento: var_sorted_pessoas[w].data_nascimento, data_cadastro: var_data_cadastro, dia_notificacao: "", mes_notificacao: "", ano_notificacao: "", hora_notificacao: "", minuto_notificacao: "", lembrete_notificacao: var_sorted_pessoas[w].lembrete_notificacao, horas_antes_notificacao: "", valor_atendimento: 0, tipo_valor_atendimento: "", tarefa_concluida: "N", id_categoria: 0, tipo_cadastro: tipo_cadastro, data_vencto_credito: var_data_vencto_credito_inc, data_pagto_credito: var_data_vencto_credito_inc, nome_cartao_credito: var_sorted_pessoas[w].nome_cartao_credito,data_criacao: Date());
+                                            var var_valor_compromisso:Double = var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento;
+                                            if sharedDadosViews.sharedInstance.var_tipo_transacao_tela_insere_cadastro == "PARCIAL"
+                                            {
+                                                var_valor_compromisso = (var_total_cartao_credito_transacao_parcial as! NSString).doubleValue;
+                                            }
+                                             var_data_compromisso = fnc_data_anterior_proximo_mes(data:var_data_compromisso,tipo:"+");
+                                             print("@criando parc data \(var_data_compromisso)");
+                                             dateFormatter.dateFormat = "dd";
+                                             var var_dia:String = dateFormatter.string(from: var_data_compromisso);
+                                        
+                                             dateFormatter.dateFormat = "MM";
+                                             var var_mes:String = dateFormatter.string(from: var_data_compromisso);
+                                             dateFormatter.dateFormat = "yyyy";
+                                             var var_ano:String = dateFormatter.string(from: var_data_compromisso);
+                                        var_pessoa_inclusao.lista_afazeres.append(afazer_pessoa(pessoa: var_nome, descricao_afazer: var_sorted_pessoas[w].lista_afazeres[y].descricao_afazer, data_notificacao: var_data_compromisso, dia_notificacao: var_dia, mes_notificacao: var_mes, ano_notificacao: var_ano, hora_notificacao: var_hora_compromisso, minuto_notificacao: var_minuto_compromisso, horas_antes_notificacao: var_sorted_pessoas[w].lista_afazeres[y].horas_antes_nofificacao, valor_atendimento: var_valor_compromisso, tipo_valor_atendimento: var_sorted_pessoas[w].lista_afazeres[y].tipo_valor_atendimento, tarefa_concluida: "N", id_categoria: var_sorted_pessoas[w].lista_afazeres[y].id_categoria, gerou_parcelas_cartao_credito: "S",data_criacao: Date(),qtde_parcelas: var_sorted_pessoas[w].lista_afazeres[y].qtde_parcelas,tipo_repeticao: var_sorted_pessoas[w].lista_afazeres[y].tipo_repeticao))
+                                     var_pessoas_inclusao_parcelas.append(var_pessoa_inclusao);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+           }
+            var var_qtd_inseriu:Int = 0;
+            if var_pessoas_inclusao_parcelas.count > 0
+            {
+                for w in 0...(var_pessoas_inclusao_parcelas.count-1)
+                {
+                    if var_pessoas_inclusao_parcelas[w].tipo_cadastro == tipo_cadastro
+                    {
+                        var var_image_foto:UIImage = UIImage(data: func_retorna_foto_do_aluno(in_nome:var_pessoas_inclusao_parcelas[w].nome) as Data) ?? UIImage();
+            
+                        for y in 0...(var_pessoas_inclusao_parcelas[w].lista_afazeres.count-1)
+                        {
+                        var_pessoas_inclusao_parcelas[w].lista_afazeres[y].gerou_parcelas_cartao_credito = "S";
+                           
+                        }
+                        print("@insere inseriu pessoa parcelado")
+                        add_pessoa(pessoa: var_pessoas_inclusao_parcelas[w], foto: var_image_foto, reloadData: true,array_pessoa_afazer_foto:fnc_preenche_array_pessoa_afazer_foto_anexa(nome:var_pessoas_inclusao_parcelas[w].nome));
+                        var_qtd_inseriu = var_qtd_inseriu + 1;
+                    }
+                }
+                
+            }
+        }
+     }
