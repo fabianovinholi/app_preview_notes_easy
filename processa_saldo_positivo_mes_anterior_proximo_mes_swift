@@ -1,0 +1,201 @@
+func fnc_processa_saldo_sobra_anterior(processa:Bool) -> String
+    {
+        func_le_pessoa_core_data(insere_cabecalho: "N");
+        var var_retorno_descricao_item_processar:String = ""
+        if var_pessoas_shared.count > 0
+        {
+            let dateFormatter = DateFormatter() //Instância do date
+            dateFormatter.dateFormat = "dd/MM/yyyy";
+            dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+            var var_sorted_pessoas = var_pessoas_shared.sorted(by: { (img0: pessoa, img1: pessoa) -> Bool in return (img0.data_vencto_credito) < (img1.data_vencto_credito)});
+            var var_data_mes_anterior:Date = fnc_data_anterior_proximo_mes(data:fnc_data_dia(),tipo:"-").startOfMonth();
+            print("@TRANSPORTA_SALDO mes anterior : \(var_data_mes_anterior)");
+            var var_saldo_encontrado:Double = 0;
+            var var_total_cartao_credito:Double = 0;
+            var var_total_receita:Double = 0;
+            var var_total_despesa:Double = 0;
+            for w in 0...(var_sorted_pessoas.count-1)
+            {
+              if var_sorted_pessoas[w].lista_afazeres.count > 0
+              {
+                if var_sorted_pessoas[w].tipo_cadastro == "E"&&var_sorted_pessoas[w].data_vencto_credito >= var_data_mes_anterior&&var_sorted_pessoas[w].data_vencto_credito <= var_data_mes_anterior.endOfMonth()
+                {
+                    
+                   for y in 0...(var_sorted_pessoas[w].lista_afazeres.count - 1)
+                   {
+                            var_total_cartao_credito = var_total_cartao_credito + var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento;
+                    }
+                  }
+                  else if (var_sorted_pessoas[w].tipo_cadastro == "C"||var_sorted_pessoas[w].tipo_cadastro == "P")
+                    {
+                        for y in 0...(var_sorted_pessoas[w].lista_afazeres.count - 1)
+                        {
+                            if var_sorted_pessoas[w].lista_afazeres[y].data_notificacao >= var_data_mes_anterior.startOfMonth()&&var_sorted_pessoas[w].lista_afazeres[y].data_notificacao  <= var_data_mes_anterior.endOfMonth()
+                            {
+                              if var_sorted_pessoas[w].lista_afazeres[y].tipo_valor_atendimento == "R"&&var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento > 0
+                              {
+                                 var_total_receita = var_total_receita +  var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento;
+                              }
+                              else if var_sorted_pessoas[w].lista_afazeres[y].tipo_valor_atendimento == "D"&&var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento > 0
+                              {
+                                  var_total_despesa = var_total_despesa + var_sorted_pessoas[w].lista_afazeres[y].valor_atendimento;
+                              }
+                            }
+                        }
+                    }
+                }
+            }
+            var_saldo_encontrado = fnc_arredondaDouble(valor: (var_total_receita - var_total_despesa) - var_total_cartao_credito, casasdecimais: 2);
+            if var_saldo_encontrado > 0
+            {
+                dateFormatter.dateFormat = "MMM/yyyy";
+                if NSLocalizedString("sigla_idioma", comment: "") == "pt"
+                {
+                   dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "es"
+                {
+                   dateFormatter.locale? = NSLocale(localeIdentifier: "es_ES") as Locale;
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "fr"
+                {
+                   dateFormatter.locale? = NSLocale(localeIdentifier: "fr_FR") as Locale;
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "de"
+                {
+                   dateFormatter.locale = NSLocale(localeIdentifier: "de_DE") as Locale;
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "it"
+                {
+                   dateFormatter.locale = NSLocale(localeIdentifier: "it_IT") as Locale;
+                }
+                else
+                {
+                    dateFormatter.locale? = NSLocale(localeIdentifier: "en_US") as Locale;
+                }
+                var var_nome_anterior:String = "\(NSLocalizedString("alert_titulo_transporte_de_saldo", comment: "").uppercased()) \(dateFormatter.string(from: var_data_mes_anterior).uppercased())";
+                var_nome_anterior = fnc_substitui_char_por_char(texto:var_nome_anterior, qual_caracter: ".", por_qual_caracter: "");
+                var var_nome:String = "\(NSLocalizedString("alert_titulo_transporte_de_saldo", comment: "").uppercased()) \(dateFormatter.string(from: fnc_data_dia()).uppercased())";
+                var_nome = fnc_substitui_char_por_char(texto:var_nome, qual_caracter: ".", por_qual_caracter: "");
+              dateFormatter.dateFormat = "dd/MM/yyyy";
+              var var_existe_nome_mes:Bool = false;
+              var var_existe_nome_mes_anterior:Bool = false;
+              for w in 0...(var_sorted_pessoas.count-1)
+              {
+                if var_sorted_pessoas[w].tipo_cadastro == "C"&&dateFormatter.date(from: var_sorted_pessoas[w].data_cadastro) ?? fnc_data_dia() >= fnc_data_dia().startOfMonth()&&dateFormatter.date(from: var_sorted_pessoas[w].data_cadastro) ?? fnc_data_dia() <= fnc_data_dia().endOfMonth()&&var_sorted_pessoas[w].nome == var_nome
+                {
+                    var_existe_nome_mes = true;
+                }
+                if var_sorted_pessoas[w].tipo_cadastro == "C"&&dateFormatter.date(from: var_sorted_pessoas[w].data_cadastro) ?? fnc_data_dia() >= var_data_mes_anterior.startOfMonth()&&dateFormatter.date(from: var_sorted_pessoas[w].data_cadastro) ?? fnc_data_dia() <= var_data_mes_anterior.endOfMonth()&&var_sorted_pessoas[w].nome == var_nome_anterior
+                {
+                    var_existe_nome_mes_anterior = true;
+                }
+             }
+             var_retorno_descricao_item_processar = "\(NSLocalizedString("alert_transfere_saldo_valor_de", comment: "")) \(fnc_arredondaDouble(valor: var_saldo_encontrado,casasdecimais: 2)) \(NSLocalizedString("alert_transfere_saldo_mes_anterior_pergunta_deseja_transferir", comment: ""))";
+              print("@TRANSPORTA_SALDO saldo encontrado INTERVALO \(var_retorno_descricao_item_processar)");
+             if processa
+             {
+                dateFormatter.dateFormat = "MMM/yyyy";
+                if NSLocalizedString("sigla_idioma", comment: "") == "pt"
+                {
+                   dateFormatter.locale? = NSLocale(localeIdentifier: "pt_BR") as Locale;
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "es"
+                {
+                   dateFormatter.locale? = NSLocale(localeIdentifier: "es_ES") as Locale;
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "fr"
+                {
+                   dateFormatter.locale? = NSLocale(localeIdentifier: "fr_FR") as Locale;
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "de"
+                {
+                   dateFormatter.locale? = NSLocale(localeIdentifier: "de_DE") as Locale;
+                }
+                 else if NSLocalizedString("sigla_idioma", comment: "") == "it"
+                {
+                   dateFormatter.locale = NSLocale(localeIdentifier: "it_IT") as Locale;
+                }
+                else
+                {
+                    dateFormatter.locale? = NSLocale(localeIdentifier: "en_US") as Locale;
+                }
+                var var_mes_anterior_string:String = dateFormatter.string(from: var_data_mes_anterior);
+                 
+                //dateFormatter.dateFormat = "dd/MM/yyyy HH:mm:ss";
+                if NSLocalizedString("sigla_idioma", comment: "") == "pt"
+                {
+                   dateFormatter.dateFormat = "dd/MM/yyyy HH:mm:ss";
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "es"
+                {
+                   dateFormatter.dateFormat = "dd/MM/yyyy HH:mm:ss";
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "fr"
+                {
+                   dateFormatter.dateFormat = "dd/MM/yyyy HH:mm:ss";
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "de"
+                {
+                   dateFormatter.dateFormat = "dd/MM/yyyy HH:mm:ss";
+                }
+                else if NSLocalizedString("sigla_idioma", comment: "") == "it"
+                {
+                   dateFormatter.locale = NSLocale(localeIdentifier: "it_IT") as Locale;
+                }
+                else
+                {
+                    dateFormatter.dateFormat = "MM/dd/yyyy HH:mm:ss";
+                }
+                var var_nome_compromisso_anterior:String = "\(NSLocalizedString("alert_transfere_saldo_do_mes", comment: "")) (\(var_mes_anterior_string.uppercased())) \(NSLocalizedString("alert_transfere_saldo_para_mes_seguinte_para", comment: "")) \(var_nome) \(NSLocalizedString("alert_transfere_saldo_para_mes_seguinte_para_no_dia", comment: "")) \(dateFormatter.string(from: Date()))";
+                var_nome_compromisso_anterior = fnc_substitui_char_por_char(texto:var_nome_compromisso_anterior, qual_caracter: ".", por_qual_caracter: "");
+                var var_nome_compromisso:String = "\(NSLocalizedString("alert_transfere_saldo_recebido_do_mes_anterior", comment: ""))(\(var_mes_anterior_string.uppercased())) \(NSLocalizedString("alert_transfere_saldo_para_mes_seguinte_para_no_dia", comment: "")) \(dateFormatter.string(from: Date()))";
+                var_nome_compromisso = fnc_substitui_char_por_char(texto:var_nome_compromisso, qual_caracter: ".", por_qual_caracter: "");
+                func fnc_insere_pessoa(nome:String,compromisso:String,data:Date)
+                {
+                    dateFormatter.dateFormat = "dd/MM/yyyy";
+                    var var_pessoa_inclusao:pessoa = pessoa(nome: fnc_substitui_char_por_char(texto:nome, qual_caracter: ".", por_qual_caracter: ""), cep: "", endereco: "", cidade: "", bairro: "", estado: "", anotacoes: compromisso, nome_afazeres: nome, telefone: "", data_nascimento: "", data_cadastro: dateFormatter.string(from: data), dia_notificacao: "", mes_notificacao: "", ano_notificacao: "", hora_notificacao: "", minuto_notificacao: "", lembrete_notificacao: "", horas_antes_notificacao: "", valor_atendimento: 0, tipo_valor_atendimento: "", tarefa_concluida: "N", id_categoria: 0, tipo_cadastro: "C", data_vencto_credito: data, data_pagto_credito: data, nome_cartao_credito: "",data_criacao: fnc_data_dia());
+                    add_pessoa(pessoa: var_pessoa_inclusao, foto: UIImage(), reloadData: false,array_pessoa_afazer_foto:var_array_pessoa_afazer_foto);
+                    /*var var_mensagem:String = fnc_inicializa_banco_de_dados_cloudkit();
+                    if var_mensagem == ""
+                    {
+                       fnc_salvar_uma_pessoa_banco_dados_cloudkit(pessoa:var_pessoa_inclusao,deleta_atual:true);
+                    }*/
+                }
+                if var_existe_nome_mes_anterior == false
+                {
+                    fnc_insere_pessoa(nome:var_nome_anterior,compromisso:var_nome_compromisso_anterior,data:var_data_mes_anterior.startOfMonth());
+                }
+                if var_existe_nome_mes == false
+                {
+                    fnc_insere_pessoa(nome:var_nome,compromisso:var_nome_compromisso,data:fnc_data_dia().startOfMonth());
+                }
+                //lancamento de debito no mes anterior com o saldo na categoria 22 e lancamento de credito no proximo mes como o saldo na categoria 23
+                    let diaFormatter = DateFormatter() //Instância do date
+                    diaFormatter.dateFormat = "dd";
+                    //
+                    let mesFormatter = DateFormatter() //Instância do date
+                    mesFormatter.dateFormat = "MM";
+                    //
+                    let anoFormatter = DateFormatter() //Instância do date
+                    anoFormatter.dateFormat = "yyyy";
+                    //
+                    var var_afazer_pessoa:afazer_pessoa = afazer_pessoa(pessoa: fnc_substitui_char_por_char(texto:var_nome_anterior, qual_caracter: ".", por_qual_caracter: ""), descricao_afazer: var_nome_compromisso_anterior, data_notificacao: var_data_mes_anterior.startOfMonth(), dia_notificacao: diaFormatter.string(from: var_data_mes_anterior.startOfMonth()), mes_notificacao: mesFormatter.string(from: var_data_mes_anterior.startOfMonth()), ano_notificacao: anoFormatter.string(from: var_data_mes_anterior.startOfMonth()), hora_notificacao: "08", minuto_notificacao: "00", horas_antes_notificacao: "0",valor_atendimento: var_saldo_encontrado, tipo_valor_atendimento: "D",tarefa_concluida: "S",id_categoria: 22,gerou_parcelas_cartao_credito: "N",data_criacao: Date(),qtde_parcelas: "0",tipo_repeticao: "M");
+                add_pessoa_afazeres(pessoa_afazer:var_afazer_pessoa,foto_anexa:UIImage());
+                    /*var var_mensagem:String = fnc_inicializa_banco_de_dados_cloudkit();
+                    if var_mensagem == ""
+                    {
+                       fnc_salvar_uma_pessoa_afazer_banco_dados_cloudkit(pessoa_afazer:var_afazer_pessoa,deleta_atual:true);
+                    }*/
+                    //
+                var_afazer_pessoa = afazer_pessoa(pessoa: fnc_substitui_char_por_char(texto:var_nome, qual_caracter: ".", por_qual_caracter: ""), descricao_afazer: var_nome_compromisso, data_notificacao: fnc_data_dia().startOfMonth() ?? Date(), dia_notificacao: diaFormatter.string(from: fnc_data_dia().startOfMonth()), mes_notificacao: mesFormatter.string(from: fnc_data_dia().startOfMonth()), ano_notificacao: anoFormatter.string(from: fnc_data_dia().startOfMonth()), hora_notificacao: "08", minuto_notificacao: "00", horas_antes_notificacao: "0",valor_atendimento: var_saldo_encontrado, tipo_valor_atendimento: "R",tarefa_concluida: "S",id_categoria: 23,gerou_parcelas_cartao_credito: "N",data_criacao: Date(),qtde_parcelas: "0",tipo_repeticao: "M");
+                add_pessoa_afazeres(pessoa_afazer:var_afazer_pessoa,foto_anexa:UIImage());
+                    /*if var_mensagem == ""
+                    {
+                      fnc_salvar_uma_pessoa_afazer_banco_dados_cloudkit(pessoa_afazer:var_afazer_pessoa,deleta_atual:true);
+                   }*/
+                }
+            }
+        }
+        return var_retorno_descricao_item_processar
+    }
